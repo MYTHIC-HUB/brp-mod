@@ -1,0 +1,37 @@
+name: Build BRP Mod
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r25c
+
+      - name: Compile libMOD.so (armeabi-v7a)
+        run: |
+          $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang++ \
+            -shared \
+            -fPIC \
+            -O2 \
+            -std=c++17 \
+            -o libMOD.so \
+            mod.cpp \
+            -llog \
+            -lm
+          echo "Build OK"
+          ls -lh libMOD.so
+
+      - name: Upload libMOD.so
+        uses: actions/upload-artifact@v3
+        with:
+          name: libMOD
+          path: libMOD.so
